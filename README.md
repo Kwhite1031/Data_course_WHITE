@@ -1,1 +1,1 @@
-# Data_course_WHITE
+# Data_course_WHITEThis README file contains information about my uploaded assignments
