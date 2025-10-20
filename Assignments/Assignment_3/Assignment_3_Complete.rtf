@@ -1,0 +1,70 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 ###########################\
+#                         #\
+#    Assignment Week 3    #\
+#                         # \
+###########################\
+\
+# YOUR REMAINING HOMEWORK ASSIGNMENT (Fill in with code) ####\
+\
+# 1.  Get a subset of the "iris" data frame where it's just even-numbered rows\
+\
+seq(2,150,2) # here's the code to get a list of the even numbers between 2 and 150\
+iris[seq(from = 2, to = nrow(iris), by = 2), ]\
+\
+##Create object named "iris_even_rows" that contains the iris dataframe\
+##limited to rows starting at two, sequenced by every 2 (only even rows)\
+iris_even_rows <- iris[seq(from = 2, to = nrow(iris), by = 2), ] \
+##Run new object to make sure it works \
+iris_even_rows\
+\
+# 2.  Create a new object called iris_chr which is a copy of iris, except where every column is a character class\
+##Create object named "iris_chr" that contains the iris dataframe\
+##but using the mutate function to change all columns to character class\
+iris_chr <- iris %>% \
+  mutate(across(everything(), as.character))\
+##Run new object to make sure it works\
+iris_chr\
+##Use lapply function to verify class of columns in new dataframe object\
+lapply(iris_chr, class)\
+\
+# 3.  Create a new numeric vector object named "Sepal.Area" which is the product of Sepal.Length and Sepal.Width\
+##Create new object "Sepal.Area", store in it the values of the \
+##iris dataframe (with respect to sepal length) multiplied by the iris dataframe (with respect \
+##to sepal width)\
+Sepal.Area <- iris$Sepal.Length*iris$Sepal.Width\
+##Run new dataframe object to make sure it works\
+Sepal.Area\
+##Check to make sure the object is numeric\
+is.numeric(Sepal.Area)\
+\
+# 4.  Add Sepal.Area to the iris data frame as a new column\
+##Create new object "dat" that is the iris dataframe but with a new column\
+##called "Sepal.Area", which contains the values defined by the Sepal.Area variable above\
+dat <- iris %>% \
+  mutate(iris, Sepal.Area)\
+##Run new dataframe object to make sure it works\
+dat\
+##Make sure the new column is there\
+names(dat)\
+\
+\
+\
+# 5.  Create a new dataframe that is a subset of iris using only rows where Sepal.Area is greater than 20 \
+      # (name it big_area_iris)\
+\
+big_area_iris <- dat[dat$Sepal.Area > 20, ]\
+big_area_iris\
+\
+\
+# 6.  Upload the last numbered section of this R script (with all answers filled in and tasks completed) \
+      # to canvas\
+      # I should be able to run your R script and get all the right objects generated\
+\
+}
