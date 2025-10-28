@@ -57,6 +57,13 @@ attach(cleaned_bird_data)
 view(cleaned_bird_data)
 
 ## 2. calculate average of egg size 
+###Show the names of columns in the df object
+names(df)
+###Find the mean of Egg_mass values in the df object
+###Will return an error because some values are n/a
+mean(df$Egg_mass)
+###Find the mean 
+mean(df$Egg_mass, na.rm = T)
 pluck(Egg_mass)
 mean(Egg_mass)
 
@@ -68,6 +75,8 @@ df %>% names()
 
 mean(df$Egg_mass)
 ?mean()
+
+mean(df$Egg_mass, na.rm = T)
 
 ##following three statements are the same as each other
 #Option 1
@@ -82,6 +91,30 @@ df %>%
 
 
 ## 3. save birds with egg size > avg
+###Create an object called df_1
+###Within df_1 object, store the df object that filters 
+###with respect to egg mass values greater than 21.784
+df_1 <- df %>% 
+  filter(Egg_mass > 21.784)
+
+view(df_1)
 ## 4. save in to a .csv in your laptop
+###Check working directory to make sure it saves in the right place
+getwd()
+###Create csv from df_1 object and name it "Egg_mass_practice_df_1.csv"
+write_csv(df_1, "Egg_mass_practice_df_1.csv")
+
 ## 5. read this csv file back to R again 
+Egg_mass_practice <- read.csv(file.choose())
+attach(Egg_mass_practice)
+view(Egg_mass_practice)
+
+
+
+
+
+##OR in 1 step
+df_1 %>% 
+  filter(Egg_mass > 21.8) %>% 
+  write.csv("Egg_mass_practice_df_1.csv")
 

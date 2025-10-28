@@ -21,28 +21,51 @@ list.files('Data/', pattern = '^b', recursive = T )
 
 ##Write a command that displays the first line of each of those “b” files 
 ##(this is tricky… use a for-loop)
-bfiles <- list.files('Data/', pattern = '^b', recursive = T ) 
+bfiles <- list.files('Data/', pattern = '^b', full.names = T, recursive = T ) 
 bfiles
 
+?list.files
 bfiles [1]
 bfiles [2]
 bfiles [3]
 bfiles [4]
 
-readLines("bfiles[1], n=1")
+new_filepath = paste0('Data/', bfiles [1])
+readLines(new_filepath, n=1)
+
+readLines(bfiles[1], n=1)
 ?readLines
 
 getwd()
 setwd('/Users/kenny/Desktop/Data_course_WHITE/')
 
+/Users/kenny/Desktop/Data_course_WHITE/data-shell/creatures/basilisk.dat
 for (number in 1:3) {
   out = readLines(bfiles[number], n = 1)
   print(out)
 }
 
+for (file in bfiles) {
+  #out = readLines(bfiles[number], n = 1)
+  print(file)
+  out = readLines(file, n = 1)
+  print(out)
+}
 
 
 
+#Do the same thing for all files that end in “.csv”
+csv_files_1 <- list.files('Data/', pattern = '.csv$', full.names = T, recursive = T ) 
+csv_files_1
+
+
+readLines(csv_files_1[1], n=1)
+
+for (i in csv_files_1) {
+  out = readLines(csv_files_1[1], n=1)
+  print(out)
+  
+}
 ##How to do assignment 2 for loop 
 
 list.files ('Data/', pattern = '^b', recursive = TRUE)
