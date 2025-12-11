@@ -1,0 +1,227 @@
+---
+title: "Assignment 10"
+author: "Kenny White"
+date: "2025-12-11"
+output: html_document
+---
+## Introduction
+The goal of this project is to help me plan a fossil-hunting trip for my family, with the end goal being to spark their interest in paleontology. Their interest is most likely to grow if they actually discover fossils of their own, so we should visit somewhere that is proven to be fossil-rich. To plan the most productive trip, two questions must be answered:
+
+1. Where are we most likely to discover a dinosaur fossil (of any type)?
+
+2. Where are we most likely to discover a new species of dinosaur? 
+
+The answers to these questions will help me to determine the regions that should be considered for a fossil-hunting trip, and will ensure that that choice is data-driven. 
+
+## Background
+Dinosaur types defined in the dataset:
+
++ Theropods: Bipedal carnivores (e.g. Tyrannosaurus, Velociraptor)
++ Sauropods: Long-necked, quadruped herbivores (e.g. Brachiosaurus)
++ Ornithopods: Quadruped & bipedal herbivores (e.g. Duck-billed dinosaurs)
++ Ceratopsians: Quadruped, herbivorous, horned-face dinosaurs (e.g. Triceratops)
++ Armored Dinosaurs: Plate/osteoderm-covered herbivorus dinosaurs (e.g. Stegosaurus)
+
+
+## Question 1: Where are we most likely to discover a dinosaur fossil of any type?
+The answer to this question will be based on the regions that have the greatest number of fossil occurrences regardless of diversity. For example, a region that has hundreds of discoveries of only one type of dinosaur would be considered "higher" on this scale than a region with fewer discoveries but a greater diversity of dinosaur types found. 
+
+### Q1 Data
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(scales)
+```
+
+After installing necessary packages (tidyverse, scales), we read in the data set:
+```{r q1read, include=TRUE}
+#Read in dataset (Source: https://www.kaggle.com/datasets/smruthiiii/dinosaur-dataset?resource=download)
+df <- read.csv("dinosaurs.csv")
+attach(df)
+```
+
+We then clean the "type" column within the data:
+```{r q1cleaning, include=TRUE}
+#Clean the "type" column
+df_clean <- df %>%
+mutate(type = ifelse(is.na(type) | type == "", "unspecified", type))
+```
+
+At this point we're ready to identify the top 5 regions by fossil occurrence:
+```{r q1ident, include=TRUE}
+#Identify Top 5 Regions by Count
+top5_occ_regions <- df_clean %>%
+count(region, sort = TRUE) %>%
+slice_max(n, n = 5) %>%
+pull(region)
+
+top5_occ_regions
+```
+Upon running the last line we can view our top 5 regions. Note that 3/5 of the top regions are in the North American Rocky Mountains. 
+
+
+We'll want to filter the data to only include those regions and calculate the proportion of fossil type per region:
+```{r q1filter, include=TRUE}
+#Filter to Those Regions
+df_top_occ <- df_clean %>%
+filter(region %in% top5_occ_regions)
+
+#Calculate Proportions of Fossil Type per Region
+df_prop_type <- df_top_occ %>%
+count(region, type) %>%
+group_by(region) %>%
+mutate(prop = n / sum(n))
+```
+
+We are now ready to construct a graph displaying the top 5 regions. We can even make it display the percentage of dinosaur types found by region, in case we have a specific kind of dinosaur we want to search for:
+``` {r q1graph, include = TRUE}
+#Proportional Bar Plot
+dino_plot_occ <- ggplot(df_prop_type, aes(x = type, y = prop, fill = type)) +
+geom_col() +
+facet_wrap(~ region, scales = "free_x") +
+scale_y_continuous(labels = scales::percent_format()) +
+labs(
+title = "Plot 1: Proportion of Fossil Types in Top 5 Regions by Occurrence",
+x = "Fossil Type",
+y = "Proportion of Finds",
+fill = "Type"
+) +
+theme_minimal() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+dino_plot_occ
+
+
+```
+
+For reference, note the total number of fossils found across all regions and the number of fossils found in the top 5 regions:
+```{r q1count, include=TRUE}
+topfossils <- nrow(df_top_occ)
+totalfossils <- nrow(df_clean)
+
+topfossils
+totalfossils
+
+length(unique(df_clean$region))
+
+```
+Of 288 total regions, 41% of fossil discoveries have been made in just the top 5 regions. 
+
+## Question 2: Where are we most likely to discover a new species of dinosaur? 
+The answer to this question will be based on the regions that have the greatest biodiversity/variety of dinosaur types found, regardless of total number of fossil occurrences. For example, a region that has only 10 fossils found, but each of a different type of dinosaur, would be considered more highly than a region with hundreds of fossil found but of only one dinosaur type. This is because these biodiverse regions are not dominated by any one or few known species, so while it may be less likely overall to find a fossil here, if a fossil is found it is more likely to be of a different species. 
+
+### Q2 Data
+We start by finding the top 5 regions that have the greatest variety of "name" values, meaning genus names:
+```{r q2ident, include=TRUE}
+###Find the 5 regions with the highest number of unique dinosaur names
+top5_diverse_regions <- df_clean %>%
+  group_by(region) %>%
+  summarize(unique_species = n_distinct(name)) %>%
+  arrange(desc(unique_species)) %>%
+  slice_max(unique_species, n = 5) %>%
+  pull(region)
+top5_diverse_regions
+```
+Note that the top 5 most biodiverse regions are nearly identical to the top 5 fossil-bearing regions determined prior, with one exception: Utah has been swapped for England. This means that while more total fossils have been discovered in England, Utah's fossils are more diverse. 
+
+We now filter our dataframe to only include the above regions and prepare to make another graph:
+```{r q2filter, include=TRUE}
+###Subset to only those regions
+df_top_div <- df_clean %>%
+  filter(region %in% top5_diverse_regions)
+
+###Prep for species richness bar plot
+species_richness <- df_top_div %>%
+  group_by(region) %>%
+  summarise(unique_species = n_distinct(name)) %>%
+  arrange(desc(unique_species))
+```
+
+
+The following code creates and displays a "species richness bar plot" of the top 5 biodiverse regions:
+```{r q2graph, include=TRUE}
+###Species richness bar plot
+dino_plot_div <- ggplot(species_richness, aes(x = reorder(region, -unique_species), 
+                             y = unique_species, 
+                             fill = region)) +
+  geom_col() +
+  labs(
+    title = "Plot 2: Species Richness in the 5 Most Diverse Regions",
+    x = "Region",
+    y = "Number of Unique Species"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+dino_plot_div
+```
+
+## Regional comparisons
+We can compare the relative biodiversity between our top 5 biodiverse zones and England, which was dethroned by Utah when switching between parameters:
+``` {r q2comp, include=TRUE}
+##Comparison in diversity between occurrence and diversity regions 
+##Adding England to the species richness plot
+# Find species richness for just the top 5 diverse regions
+species_richness_top5 <- df_top_div %>%
+  group_by(region) %>%
+  summarise(unique_species = n_distinct(name))
+# Calculate species richness for England
+species_richness_england <- df %>%
+  filter(region == "England") %>%
+  summarise(region = "England",
+            unique_species = n_distinct(name))
+# Combine
+species_richness_with_england <- bind_rows(
+  species_richness_top5,
+  species_richness_england
+)
+
+dino_plot_div_eng <- ggplot(species_richness_with_england, 
+       aes(x = reorder(region, -unique_species), 
+           y = unique_species,
+           fill = region)) +
+  geom_col() +
+  labs(
+    title = "Plot 3: Species Richness in Top 5 Diverse Regions + England",
+    x = "Region",
+    y = "Number of Unique Species"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+dino_plot_div_eng
+```
+
+We can do the same in reference to the top 5 regions by occurrence as well, seeing how Utah stacks up against the top 5 fossil bearing regions:
+
+```{r q1comp, include=TRUE}
+###Comparison in occurrences between occurrence and diverse regions
+###Add Utah to bar graph
+####Compute total occurrence counts for those regions + Utah
+regions_of_interest <- c(top5_occ_regions, "Utah")
+
+occurrence_counts <- df %>%
+  filter(region %in% regions_of_interest) %>%
+  count(region, name = "total_occurrences") %>%
+  arrange(desc(total_occurrences))
+####Create bar graph
+dino_plot_occ_ut <- ggplot(occurrence_counts,
+       aes(x = reorder(region, -total_occurrences),
+           y = total_occurrences,
+           fill = region)) +
+  geom_col() +
+  labs(
+    title = "Plot 4: Total Fossil Occurrences: Top 5 Regions + Utah",
+    x = "Region",
+    y = "Number of Fossil Occurrences"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+dino_plot_occ_ut
+```
+
+## Conclusion
+
+Based on the analysis of the dinosaur fossil dataset, we are most likely to find a dinosaur fossil in Alberta, Montana, Wyoming, England, or Omnogov. We are most likely to discover a new type of dinosaur in Alberta, Montana, Wyoming, Utah, or Omnogov. If I want to maximize our time fossil hunting I should stay local; therefore, if I want to discover a new dinosaur with my family I should take them on a trip somewhere in Utah, and if I want to discover any type of fossil with them I should take them on a trip to Wyoming. 
